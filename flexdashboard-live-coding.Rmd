@@ -86,5 +86,5 @@ Column {data-width=100}
 ### Chart D
 
 ```{r}
-
+data.ligue1 %>%select(short_name,overall) %>%  mutate(rank = dense_rank(desc(overall))) %>% filter(rank<=5)
 ```
