@@ -88,3 +88,26 @@ Column {data-width=100}
 ```{r}
 data.ligue1 %>%select(short_name,overall) %>%  mutate(rank = dense_rank(desc(overall))) %>% filter(rank<=5)
 ```
+
+```{r boxpotL1}
+
+df.stats<-data.ligue1 %>% group_by(club_name) %>% summarize(mean_attack=median(attacking_finishing))
+
+data.ligue1.plus.attacking<-data.ligue1 %>% select(club_name,short_name,attacking_finishing) %>% inner_join(df.stats,by="club_name")
+
+data.ligue1.plus.attacking$club_name <- factor(data.ligue1.plus.attacking$club_name, levels = unique(df.stats$club_name)[order(df.stats$mean_attack, decreasing = TRUE)])
+
+
+data.ligue1.plus.attacking %>%
+  plot_ly(
+    x = ~club_name,
+    y = ~attacking_finishing,
+    split = ~club_name,
+    type = 'box',
+    box = list(
+      visible = T
+    ))
+
+
+```
+
