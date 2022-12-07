@@ -1,0 +1,90 @@
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(plotly)
+library(dplyr)
+library(ggplot2)
+
+load(file="D:/IRIAF/M2_DATAVIZ/dashboard2022/fifadataset.Rdata")
+```
+
+Ligue 1
+=======================================================================
+
+Column {data-width=800}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+data.ligue1<-my.fifa.dataset %>% filter(league_name=="French Ligue 1")
+plot_ly(data = data.ligue1, x = ~overall, y = ~wage_eur, color=~league_name, text = ~paste("Player: ", short_name))
+```
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+my.value<-data.ligue1 %>% summarise(wage=round(mean(wage_eur)))
+valueBox(my.value, icon="fa-euro")
+```
+
+### Chart C
+
+```{r}
+data.ligue1 %>%
+  plot_ly(
+    x = ~Role,
+    y = ~wage_eur,
+    split = ~Role,
+    type = 'box',
+    box = list(
+      visible = T
+    ),
+    meanline = list(
+      visible = T
+    )
+  ) 
+```
+
+
+### Chart D
+
+```{r}
+agg.data.ligue<-data.ligue1 %>% group_by(Role) %>% summarise(wage=round(mean(wage_eur)))
+agg.data.ligue %>%
+  plot_ly(
+    x = ~Role,
+    y = ~wage,
+    split = ~Role,
+    type = 'histogram',
+    box = list(
+      visible = T
+    ),
+    meanline = list(
+      visible = T
+    )
+  ) 
+```
+
+Onglet_B
+=======================================================================
+
+
+Column {data-width=100}
+-----------------------------------------------------------------------
+
+### Chart D
+
+```{r}
+
+```
