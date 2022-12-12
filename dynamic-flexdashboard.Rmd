@@ -1,0 +1,62 @@
+---
+title: "Dynamic dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(plotly)
+library(dplyr)
+library(ggplot2)
+library(DT)
+library(crosstalk)
+
+load(file="fifadataset.Rdata")
+local.data<-my.fifa.dataset %>% select(sofifa_id,short_name,overall,age,club_name,Role,league_name)
+attaquants<-local.data %>% filter(Role == "Attaquant") %>% arrange(-overall)
+Milieu_central<-local.data %>% filter(Role == "Milieu_central")%>% arrange(-overall)
+
+sd <- SharedData$new(local.data,~sofifa_id, group = "fifa_subset")
+sd_att <- SharedData$new(attaquants,~sofifa_id,group = "fifa_subset")
+sd_milieu <- SharedData$new(Milieu_central,~sofifa_id,group = "fifa_subset")
+
+```
+
+Inputs {.sidebar}
+-------------------------------------
+
+```{r filters}
+# Filter input - league
+filter_select(id = "champ", 
+              label = "Select Championship",
+              sharedData = sd, 
+              group = ~league_name)
+
+filter_slider(id = "age", 
+              label = "Select Age",
+              sharedData = sd, 
+              column = ~age)
+
+```
+
+
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Attaquants
+
+```{r}
+datatable(sd_att,options = list( pageLength = 5))
+
+```
+
+### Milieux
+
+```{r}
+datatable(sd_milieu,options = list( pageLength = 5))
+
+```

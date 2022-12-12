@@ -1,0 +1,101 @@
+---
+title: "Synthese big five"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(plotly)
+library(dplyr)
+library(ggplot2)
+library(kableExtra)
+
+load(file="fifadataset.Rdata")
+data.ligue1<-my.fifa.dataset %>% filter(league_name=="French Ligue 1") %>%   mutate(club_logo_url=paste0(sprintf("![](%s)", club_logo_url)))
+data.PL<-my.fifa.dataset %>% filter(league_name=="English Premier League") %>%   mutate(club_logo_url=paste0(sprintf("![](%s)", club_logo_url)))
+data.SerieA<-my.fifa.dataset %>% filter(league_name=="Italian Serie A") %>%   mutate(club_logo_url=paste0(sprintf("![](%s)", club_logo_url)))
+data.bundes<-my.fifa.dataset %>% filter(league_name=="German 1. Bundesliga") %>%   mutate(club_logo_url=paste0(sprintf("![](%s)", club_logo_url)))
+data.liga<-my.fifa.dataset %>% filter(league_name=="Spain Primera Division") %>%   mutate(club_logo_url=paste0(sprintf("![](%s)", club_logo_url)))
+```
+
+Ligue 1
+=======================================================================
+
+Row
+-------------------------------------
+### Nb joueurs
+```{r}
+my.value<-data.ligue1 %>% summarise(nb=n_distinct(sofifa_id),wage=round(mean(wage_eur)),wage_med=round(median(wage_eur)),overall=round(mean(overall)),age=round(mean(age),1))
+valueBox(my.value$nb, icon="fa-person")
+```
+
+### Revenu median
+```{r}
+valueBox(my.value$wage_med, icon="fa-euro")
+```
+
+### Revenu moyen
+```{r}
+valueBox(my.value$wage, icon="fa-euro")
+```
+
+### Overall moyen
+```{r}
+valueBox(my.value$overall, icon="fa-meteor")
+```
+
+### Age moyen
+```{r}
+valueBox(my.value$age, icon="fa-person-cane")
+```
+
+Row
+-------------------------------------
+
+### Top 5 overall
+```{r}
+d<-data.ligue1 %>% select(club_logo_url,short_name,overall) %>%  mutate(rank = dense_rank(desc(overall))) %>% filter(rank<=5)
+
+d %>% kable %>%
+  kable_styling()
+```
+### Top 5 wages
+```{r}
+d<-data.ligue1 %>% select(club_logo_url,short_name,wage_eur) %>%  mutate(rank = dense_rank(desc(wage_eur))) %>% filter(rank<=5)
+
+d %>% kable %>%
+  kable_styling()
+```
+
+### Top 5 dribbleurs
+```{r}
+d<-data.ligue1 %>% select(club_logo_url,short_name,skill_dribbling) %>%  mutate(rank = dense_rank(desc(skill_dribbling))) %>% filter(rank<=5)
+
+d %>% kable %>%
+  kable_styling() 
+```
+
+Row
+-------------------------------------
+### Les meilleures attacking finishing
+```{r}
+df.stats<-data.ligue1 %>% filter(Role %in% c("Attaquant","Ailier_droit","Ailier_gauche") )%>% group_by(club_name) %>% summarize(mean_attack=median(attacking_finishing))
+
+data.ligue1.plus.attacking<-data.ligue1 %>% filter(Role %in% c("Attaquant","Ailier_droit","Ailier_gauche") ) %>% select(club_name,short_name,attacking_finishing) %>% inner_join(df.stats,by="club_name")
+
+data.ligue1.plus.attacking$club_name <- factor(data.ligue1.plus.attacking$club_name, levels = unique(df.stats$club_name)[order(df.stats$mean_attack, decreasing = TRUE)])
+
+
+data.ligue1.plus.attacking %>%
+  plot_ly(
+    x = ~club_name,
+    y = ~attacking_finishing,
+    split = ~club_name,
+    type = 'box',
+    box = list(
+      visible = T
+    ))
+
+```
